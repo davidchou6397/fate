@@ -95,54 +95,64 @@
         }
 
         .chart {
-            width: 700px;
-            height: 700px;
+            width: 1000px;
+            height: 750px;
             position: relative;
             background: linear-gradient(45deg, #f7fafc, #edf2f7);
             border: 3px solid #4a5568;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            padding: 15px;
         }
 
         .palace {
-            position: absolute;
             border: 2px solid #2d3748;
             background: rgba(255, 255, 255, 0.9);
             display: flex;
             flex-direction: column;
-            padding: 5px;
-            font-size: 10px;
+            padding: 10px;
+            font-size: 14px;
             text-align: center;
             transition: all 0.3s ease;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-cell {
+            background: transparent;
         }
 
         .palace:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(102, 126, 234, 0.15);
             transform: scale(1.02);
             z-index: 10;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
 
         .palace-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
 
         .palace-name {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-size: 9px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: bold;
         }
 
         .dizhi {
             color: #666;
-            font-size: 8px;
+            font-size: 11px;
             font-weight: bold;
         }
 
@@ -150,32 +160,32 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 3px;
         }
 
         .main-stars {
             color: #9f7aea;
             font-weight: bold;
-            font-size: 9px;
-            line-height: 1.1;
+            font-size: 12px;
+            line-height: 1.3;
         }
 
         .auxiliary-stars {
             color: #e53e3e;
-            font-size: 8px;
-            line-height: 1.1;
+            font-size: 11px;
+            line-height: 1.3;
         }
 
         .four-elements {
             color: #38a169;
-            font-size: 8px;
-            line-height: 1.1;
+            font-size: 10px;
+            line-height: 1.3;
         }
 
         .others {
             color: #805ad5;
-            font-size: 8px;
-            line-height: 1.1;
+            font-size: 10px;
+            line-height: 1.3;
         }
 
         .ming-palace {
@@ -336,26 +346,21 @@
 
     <script>
         // 基礎數據
-        const palaceNames = ['命宮', '父母', '福德', '田宅', '官祿', '交友', '遷移', '疾厄', '財帛', '子女', '夫妻', '兄弟'];
+        const palaceNames = ['命宮', '兄弟', '夫妻', '子女', '財帛', '疾厄', '遷移', '交友', '官祿', '田宅', '福德', '父母'];
         const dizhi = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
         const tiangan = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
         const shichen = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
         
-        // 宮位位置配置
-        const palacePositions = [
-            { top: '35%', left: '75%', width: '20%', height: '15%' },  // 命宮
-            { top: '20%', left: '75%', width: '20%', height: '15%' },  // 父母
-            { top: '5%', left: '75%', width: '20%', height: '15%' },   // 福德
-            { top: '5%', left: '55%', width: '20%', height: '15%' },   // 田宅
-            { top: '5%', left: '35%', width: '20%', height: '15%' },   // 官祿
-            { top: '5%', left: '15%', width: '20%', height: '15%' },   // 交友
-            { top: '20%', left: '5%', width: '20%', height: '15%' },   // 遷移
-            { top: '35%', left: '5%', width: '20%', height: '15%' },   // 疾厄
-            { top: '50%', left: '5%', width: '20%', height: '15%' },   // 財帛
-            { top: '65%', left: '5%', width: '20%', height: '15%' },   // 子女
-            { top: '80%', left: '15%', width: '20%', height: '15%' },  // 夫妻
-            { top: '80%', left: '35%', width: '20%', height: '15%' }   // 兄弟
+        // 4x3網格排列的宮位順序 (按紫微斗數標準逆時針排列)
+        const gridOrder = [
+            11, 10, 9, 8,   // 第一行：父母、福德、田宅、官祿
+            0,  -1, -1, 7,  // 第二行：命宮、空、空、交友  
+            1,  2,  3,  6   // 第三行：兄弟、夫妻、子女、遷移
+            // 注意：財帛(4)和疾厄(5)需要特別處理
         ];
+
+        // 中間區域的宮位 (財帛和疾厄)
+        const centerPalaces = [4, 5]; // 財帛、疾厄
 
         // 五行局表
         const wuxingju = {
@@ -561,80 +566,48 @@
                 
                 // 清空並重新繪製命盤
                 chart.innerHTML = '';
+                chart.style.position = 'relative';
                 
-                // 創建十二宮
-                for (let i = 0; i < 12; i++) {
-                    const palace = document.createElement('div');
-                    palace.className = 'palace';
-                    
-                    if (i === mingPalace) palace.classList.add('ming-palace');
-                    if (i === shenPalace) palace.classList.add('shen-palace');
-                    
-                    palace.style.top = palacePositions[i].top;
-                    palace.style.left = palacePositions[i].left;
-                    palace.style.width = palacePositions[i].width;
-                    palace.style.height = palacePositions[i].height;
-                    
-                    // 宮位標題
-                    const header = document.createElement('div');
-                    header.className = 'palace-header';
-                    
-                    const palaceName = document.createElement('div');
-                    palaceName.className = 'palace-name';
-                    palaceName.textContent = palaceNames[i];
-                    
-                    const dizhiName = document.createElement('div');
-                    dizhiName.className = 'dizhi';
-                    dizhiName.textContent = dizhi[i];
-                    
-                    header.appendChild(palaceName);
-                    header.appendChild(dizhiName);
-                    palace.appendChild(header);
-                    
-                    // 星曜容器
-                    const starsContainer = document.createElement('div');
-                    starsContainer.className = 'stars-container';
-                    
-                    // 主星
-                    const mainStarsDiv = document.createElement('div');
-                    mainStarsDiv.className = 'main-stars';
-                    const mainStarsInPalace = [];
-                    for (const [starName, pos] of Object.entries(mainStars)) {
-                        if (pos === i) {
-                            mainStarsInPalace.push(starName);
+                // 創建4x3網格的外圍宮位
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < 4; col++) {
+                        const gridIndex = row * 4 + col;
+                        const palaceIndex = gridOrder[gridIndex];
+                        
+                        if (palaceIndex >= 0) {
+                            const palace = createPalace(palaceIndex, mingPalace, shenPalace, mainStars, auxStars, sihuaStars);
+                            chart.appendChild(palace);
+                        } else {
+                            // 中間的空白區域
+                            const emptyCell = document.createElement('div');
+                            emptyCell.className = 'empty-cell';
+                            chart.appendChild(emptyCell);
                         }
                     }
-                    mainStarsDiv.innerHTML = mainStarsInPalace.join(' ');
-                    
-                    // 輔星
-                    const auxStarsDiv = document.createElement('div');
-                    auxStarsDiv.className = 'auxiliary-stars';
-                    const auxStarsInPalace = [];
-                    for (const [starName, pos] of Object.entries(auxStars)) {
-                        if (pos === i) {
-                            auxStarsInPalace.push(starName);
-                        }
-                    }
-                    auxStarsDiv.innerHTML = auxStarsInPalace.join(' ');
-                    
-                    // 四化星
-                    const sihuaDiv = document.createElement('div');
-                    sihuaDiv.className = 'four-elements';
-                    const sihuaInPalace = [];
-                    for (const [type, pos] of Object.entries(sihuaStars)) {
-                        if (pos === i) {
-                            sihuaInPalace.push(type);
-                        }
-                    }
-                    sihuaDiv.innerHTML = sihuaInPalace.join(' ');
-                    
-                    starsContainer.appendChild(mainStarsDiv);
-                    starsContainer.appendChild(auxStarsDiv);
-                    starsContainer.appendChild(sihuaDiv);
-                    palace.appendChild(starsContainer);
-                    
-                    chart.appendChild(palace);
                 }
+                
+                // 在中間區域添加財帛和疾厄宮
+                const centerContainer = document.createElement('div');
+                centerContainer.style.position = 'absolute';
+                centerContainer.style.top = '33.33%';
+                centerContainer.style.left = '25%';
+                centerContainer.style.width = '50%';
+                centerContainer.style.height = '33.33%';
+                centerContainer.style.display = 'flex';
+                centerContainer.style.gap = '10px';
+                centerContainer.style.padding = '10px';
+                
+                // 財帛宮
+                const caiboPalace = createPalace(4, mingPalace, shenPalace, mainStars, auxStars, sihuaStars);
+                caiboPalace.style.flex = '1';
+                centerContainer.appendChild(caiboPalace);
+                
+                // 疾厄宮
+                const jiePalace = createPalace(5, mingPalace, shenPalace, mainStars, auxStars, sihuaStars);
+                jiePalace.style.flex = '1';
+                centerContainer.appendChild(jiePalace);
+                
+                chart.appendChild(centerContainer);
                 
                 // 更新資訊面板
                 updateDetailedInfo(mingPalace, shenPalace, wuxingType, year, month, day, hour, mainStars, lunar, ganZhi);
@@ -644,6 +617,74 @@
                     `陽曆：${year}年${month}月${day}日 ${shichen[hour]}時 | 年干支：${ganZhi} | 五行局：${wuxingType}`;
                 
             }, 1000);
+        }
+        
+        function createPalace(i, mingPalace, shenPalace, mainStars, auxStars, sihuaStars) {
+            const palace = document.createElement('div');
+            palace.className = 'palace';
+            
+            if (i === mingPalace) palace.classList.add('ming-palace');
+            if (i === shenPalace) palace.classList.add('shen-palace');
+            
+            // 宮位標題
+            const header = document.createElement('div');
+            header.className = 'palace-header';
+            
+            const palaceName = document.createElement('div');
+            palaceName.className = 'palace-name';
+            palaceName.textContent = palaceNames[i];
+            
+            const dizhiName = document.createElement('div');
+            dizhiName.className = 'dizhi';
+            dizhiName.textContent = dizhi[i];
+            
+            header.appendChild(palaceName);
+            header.appendChild(dizhiName);
+            palace.appendChild(header);
+            
+            // 星曜容器
+            const starsContainer = document.createElement('div');
+            starsContainer.className = 'stars-container';
+            
+            // 主星
+            const mainStarsDiv = document.createElement('div');
+            mainStarsDiv.className = 'main-stars';
+            const mainStarsInPalace = [];
+            for (const [starName, pos] of Object.entries(mainStars)) {
+                if (pos === i) {
+                    mainStarsInPalace.push(starName);
+                }
+            }
+            mainStarsDiv.innerHTML = mainStarsInPalace.join(' ');
+            
+            // 輔星
+            const auxStarsDiv = document.createElement('div');
+            auxStarsDiv.className = 'auxiliary-stars';
+            const auxStarsInPalace = [];
+            for (const [starName, pos] of Object.entries(auxStars)) {
+                if (pos === i) {
+                    auxStarsInPalace.push(starName);
+                }
+            }
+            auxStarsDiv.innerHTML = auxStarsInPalace.join(' ');
+            
+            // 四化星
+            const sihuaDiv = document.createElement('div');
+            sihuaDiv.className = 'four-elements';
+            const sihuaInPalace = [];
+            for (const [type, pos] of Object.entries(sihuaStars)) {
+                if (pos === i) {
+                    sihuaInPalace.push(type);
+                }
+            }
+            sihuaDiv.innerHTML = sihuaInPalace.join(' ');
+            
+            starsContainer.appendChild(mainStarsDiv);
+            starsContainer.appendChild(auxStarsDiv);
+            starsContainer.appendChild(sihuaDiv);
+            palace.appendChild(starsContainer);
+            
+            return palace;
         }
         
         function updateDetailedInfo(mingPos, shenPos, wuxingType, year, month, day, hour, mainStars, lunar, ganZhi) {
