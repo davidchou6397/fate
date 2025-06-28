@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易經卜卦系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .divination-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .question-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .divination-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .divination-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238,90,82,0.4);
+        }
+        
+        .method-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .method-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .method-btn.active {
+            background: #2a5298;
+            color: white;
+            border-color: #2a5298;
+        }
+        
+        .hexagram-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .hexagram-lines {
+            font-family: monospace;
+            font-size: 24px;
+            line-height: 1.2;
+            margin: 15px 0;
+        }
+        
+        .hexagram-canvas {
+            border: 2px solid #2a5298;
+            border-radius: 10px;
+            margin: 15px auto;
+            display: block;
+            background: #f8f9fa;
+        }
+        
+        .hexagram-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2a5298;
+            margin: 10px 0;
+        }
+        
+        .result-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .result-section {
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2a5298;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #2a5298;
+            padding-bottom: 5px;
+        }
+        
+        .result-text {
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .coins-animation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .coin {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            border: 2px solid #d4af37;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            animation: flip 1s ease-in-out;
+        }
+        
+        @keyframes flip {
+            0%, 100% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+        }
+        
+        .trigram-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .trigram-item {
+            text-align: center;
+        }
+        
+        .trigram-symbol {
+            font-size: 20px;
+            font-family: monospace;
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .method-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>易經卜卦系統</h1>
+            <p>以古老智慧指引人生方向</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="divination-panel">
+                <h3>請輸入您的問題</h3>
+                <textarea class="question-input" placeholder="請輸入您想要占卜的問題，例如：我是否應該換工作？感情運勢如何？等等..."></textarea>
+                
+                <div class="method-selector">
+                    <div class="method-btn active" data-method="coins">投幣法</div>
+                    <div class="method-btn" data-method="random">隨機起卦</div>
+                </div>
+                
+                <button class="divination-btn" onclick="startDivination()">開始卜卦</button>
+                
+                <div class="coins-animation" id="coinsAnimation" style="display: none;">
+                    <div class="coin">陽</div>
+                    <div class="coin">陰</div>
+                    <div class="coin">陽</div>
+                </div>
+                
+                <div class="hexagram-display">
+                    <canvas id="hexagramCanvas" class="hexagram-canvas" width="300" height="400"></canvas>
+                    <div class="hexagram-name" id="hexagramName"></div>
+                    <div class="trigram-info" id="trigramInfo"></div>
+                </div>
+            </div>
+            
+            <div class="result-panel">
+                <div class="result-section">
+                    <div class="result-title">卦辭</div>
+                    <div class="result-text" id="hexagramText"></div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-title">象辭</div>
+                    <div class="result-text" id="imageText"></div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-title">占卜解析</div>
+                    <div class="result-text" id="interpretation"></div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-title">建議</div>
+                    <div class="result-text" id="advice"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 六十四卦數據
+        const hexagrams = {
+            "111111": {
+                name: "乾", number: 1,
+                text: "元亨利貞。",
+                image: "天行健，君子以自強不息。",
+                upper: "乾", lower: "乾",
+                interpretation: "乾卦代表純陽之象，象徵創造力、領導力和積極進取。此時正是大展身手的好時機。",
+                advice: "宜積極進取，發揮領導才能，但要謹防過於剛強而折損。"
+            },
+            "000000": {
+                name: "坤", number: 2,
+                text: "元亨，利牝馬之貞。",
+                image: "地勢坤，君子以厚德載物。",
+                upper: "坤", lower: "坤",
+                interpretation: "坤卦代表純陰之象，象徵包容、順從和厚德載物。適宜以柔克剛。",
+                advice: "宜以德服人，包容他人，順應時勢，不宜強行出頭。"
+            },
+            "100010": {
+                name: "屯", number: 3,
+                text: "元亨利貞，勿用有攸往，利建侯。",
+                image: "雲雷屯，君子以經綸。",
+                upper: "坎", lower: "震",
+                interpretation: "屯卦象徵初生困難，如草木破土而出。雖有困難但蘊含生機。",
+                advice: "面對困難要有耐心，穩紮穩打，不宜冒進，宜尋求幫助。"
+            },
+            "010001": {
+                name: "蒙", number: 4,
+                text: "亨。匪我求童蒙，童蒙求我。",
+                image: "山下出泉，蒙；君子以果行育德。",
+                upper: "艮", lower: "坎",
+                interpretation: "蒙卦代表啟蒙教育，象徵學習和成長。需要謙虛求教。",
+                advice: "宜虛心學習，接受教導，不可自以為是，要有學習的誠意。"
+            },
+            "111010": {
+                name: "需", number: 5,
+                text: "有孚，光亨，貞吉，利涉大川。",
+                image: "雲上於天，需；君子以飲食宴樂。",
+                upper: "乾", lower: "坎",
+                interpretation: "需卦象徵等待，如雲在天上等待降雨。需要耐心等待時機。",
+                advice: "宜耐心等待，不可急躁，保持信心，時機成熟自然有所成就。"
+            },
+            "010111": {
+                name: "訟", number: 6,
+                text: "有孚，窒。惕中吉。終凶。利見大人，不利涉大川。",
+                image: "天與水違行，訟；君子以作事謀始。",
+                upper: "乾", lower: "坎",
+                interpretation: "訟卦代表爭訟衝突，天水背道而馳。需要謹慎處理爭端。",
+                advice: "宜避免爭執，以和為貴，如有爭議應尋求公正仲裁。"
+            },
+            "010000": {
+                name: "師", number: 7,
+                text: "貞，丈人，吉無咎。",
+                image: "地中有水，師；君子以容民畜眾。",
+                upper: "坤", lower: "坎",
+                interpretation: "師卦象徵軍隊出征，需要有經驗的將領統帥。代表組織和紀律。",
+                advice: "宜選擇有經驗的領導者，團結一致，遵守紀律，方能成功。"
+            },
+            "000010": {
+                name: "比", number: 8,
+                text: "吉。原筮元永貞，無咎。",
+                image: "地上有水，比；先王以建萬國，親諸侯。",
+                upper: "坎", lower: "坤",
+                interpretation: "比卦象徵親近和協助，如水附於地。代表團結合作。",
+                advice: "宜與他人和睦相處，互相幫助，建立良好的人際關係。"
+            }
+        };
+
+        // 八卦基本信息
+        const trigrams = {
+            "111": { name: "乾", element: "天", attribute: "健" },
+            "000": { name: "坤", element: "地", attribute: "順" },
+            "100": { name: "震", element: "雷", attribute: "動" },
+            "010": { name: "坎", element: "水", attribute: "陷" },
+            "001": { name: "艮", element: "山", attribute: "止" },
+            "101": { name: "巽", element: "風", attribute: "入" },
+            "110": { name: "離", element: "火", attribute: "麗" },
+            "011": { name: "兌", element: "澤", attribute: "說" }
+        };
+
+        let currentMethod = 'coins';
+
+        // 方法選擇
+        document.querySelectorAll('.method-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentMethod = this.dataset.method;
+            });
+        });
+
+        function startDivination() {
+            const question = document.querySelector('.question-input').value.trim();
+            if (!question) {
+                alert('請輸入您的問題！');
+                return;
+            }
+
+            if (currentMethod === 'coins') {
+                showCoinsAnimation();
+                setTimeout(() => {
+                    const hexagram = generateHexagramByCoins();
+                    displayResult(hexagram, question);
+                }, 2000);
+            } else {
+                const hexagram = generateRandomHexagram();
+                displayResult(hexagram, question);
+            }
+        }
+
+        function showCoinsAnimation() {
+            const animation = document.getElementById('coinsAnimation');
+            animation.style.display = 'flex';
+            
+            setTimeout(() => {
+                animation.style.display = 'none';
+            }, 2000);
+        }
+
+        function generateHexagramByCoins() {
+            let lines = [];
+            for (let i = 0; i < 6; i++) {
+                // 模擬投三枚硬幣
+                let heads = 0;
+                for (let j = 0; j < 3; j++) {
+                    if (Math.random() < 0.5) heads++;
+                }
+                // 3個正面=老陽(1)，2個正面=少陰(0)，1個正面=少陽(1)，0個正面=老陰(0)
+                lines.push((heads === 0 || heads === 2) ? '0' : '1');
+            }
+            return lines.reverse().join(''); // 從下往上排列
+        }
+
+        function generateRandomHexagram() {
+            let hexagram = '';
+            for (let i = 0; i < 6; i++) {
+                hexagram += Math.random() < 0.5 ? '0' : '1';
+            }
+            return hexagram;
+        }
+
+        function displayResult(hexagramCode, question) {
+            // 如果沒有找到對應的卦，使用最接近的卦或創建一個基本解釋
+            let hexagram = hexagrams[hexagramCode];
+            
+            if (!hexagram) {
+                // 創建一個基本的卦象解釋
+                const upperTrigram = hexagramCode.slice(0, 3);
+                const lowerTrigram = hexagramCode.slice(3, 6);
+                
+                hexagram = {
+                    name: `${trigrams[upperTrigram]?.name || '未知'}${trigrams[lowerTrigram]?.name || '未知'}`,
+                    text: "此卦象徵變化與機遇並存。",
+                    image: "上下相應，內外協調。",
+                    upper: trigrams[upperTrigram]?.name || '未知',
+                    lower: trigrams[lowerTrigram]?.name || '未知',
+                    interpretation: "當前情況複雜多變，需要仔細分析形勢，把握時機。",
+                    advice: "宜審慎行事，順應自然規律，不可強求。"
+                };
+            }
+
+            // 顯示卦象
+            displayHexagram(hexagramCode, hexagram);
+            
+            // 顯示解釋
+            document.getElementById('hexagramText').textContent = hexagram.text;
+            document.getElementById('imageText').textContent = hexagram.image;
+            document.getElementById('interpretation').textContent = `針對您的問題"${question}"，${hexagram.interpretation}`;
+            document.getElementById('advice').textContent = hexagram.advice;
+        }
+
+        function displayHexagram(code, hexagram) {
+            // 繪製卦象到Canvas
+            drawHexagramOnCanvas(code);
+            
+            document.getElementById('hexagramName').textContent = `${hexagram.number || '?'}. ${hexagram.name}`;
+            
+            // 顯示上下卦信息
+            const upperTrigram = code.slice(0, 3);
+            const lowerTrigram = code.slice(3, 6);
+            
+            let trigramInfo = '';
+            if (trigrams[upperTrigram] && trigrams[lowerTrigram]) {
+                trigramInfo = `
+                    <div class="trigram-item">
+                        <div>上卦：${trigrams[upperTrigram].name}（${trigrams[upperTrigram].element}）</div>
+                        <div style="font-size: 12px; color: #666;">${trigrams[upperTrigram].attribute}</div>
+                    </div>
+                    <div class="trigram-item">
+                        <div>下卦：${trigrams[lowerTrigram].name}（${trigrams[lowerTrigram].element}）</div>
+                        <div style="font-size: 12px; color: #666;">${trigrams[lowerTrigram].attribute}</div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('trigramInfo').innerHTML = trigramInfo;
+        }
+
+        function drawHexagramOnCanvas(code) {
+            const canvas = document.getElementById('hexagramCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 清空畫布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 設置樣式
+            ctx.strokeStyle = '#2a5298';
+            ctx.fillStyle = '#2a5298';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            
+            const lineWidth = 120;
+            const lineHeight = 8;
+            const lineSpacing = 50;
+            const startX = (canvas.width - lineWidth) / 2;
+            const startY = 50;
+            
+            // 從上往下繪製六爻（canvas中code[0]是最上面的爻）
+            for (let i = 0; i < 6; i++) {
+                const y = startY + i * lineSpacing;
+                
+                if (code[i] === '1') {
+                    // 陽爻：實線
+                    ctx.beginPath();
+                    ctx.moveTo(startX, y);
+                    ctx.lineTo(startX + lineWidth, y);
+                    ctx.stroke();
+                    
+                    // 在線的兩端畫小圓點
+                    ctx.beginPath();
+                    ctx.arc(startX - 5, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.arc(startX + lineWidth + 5, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                } else {
+                    // 陰爻：斷線
+                    const gapWidth = 20;
+                    const leftLineWidth = (lineWidth - gapWidth) / 2;
+                    
+                    // 左半段
+                    ctx.beginPath();
+                    ctx.moveTo(startX, y);
+                    ctx.lineTo(startX + leftLineWidth, y);
+                    ctx.stroke();
+                    
+                    // 右半段
+                    ctx.beginPath();
+                    ctx.moveTo(startX + leftLineWidth + gapWidth, y);
+                    ctx.lineTo(startX + lineWidth, y);
+                    ctx.stroke();
+                    
+                    // 在線的兩端畫小圓點
+                    ctx.beginPath();
+                    ctx.arc(startX - 5, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.arc(startX + lineWidth + 5, y, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                
+                // 在右側標註爻位
+                ctx.font = '14px Microsoft YaHei';
+                ctx.fillStyle = '#666';
+                ctx.fillText(`${6-i}爻`, startX + lineWidth + 20, y + 5);
+                ctx.fillStyle = '#2a5298';
+            }
+            
+            // 繪製上下卦分界線
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(startX - 30, startY + 2.5 * lineSpacing);
+            ctx.lineTo(startX + lineWidth + 30, startY + 2.5 * lineSpacing);
+            ctx.stroke();
+            
+            // 標註上卦下卦
+            ctx.setLineDash([]);
+            ctx.font = '16px Microsoft YaHei';
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fillText('上卦', startX - 50, startY + 1.5 * lineSpacing);
+            ctx.fillText('下卦', startX - 50, startY + 4.5 * lineSpacing);
+            
+            // 添加裝飾性邊框
+            ctx.strokeStyle = '#2a5298';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([]);
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        }
+
+        // 初始化時顯示一個示例
+        window.onload = function() {
+            const exampleHexagram = "111111"; // 乾卦
+            displayResult(exampleHexagram, "示例問題");
+        };
+    </script>
+</body>
+</html>
