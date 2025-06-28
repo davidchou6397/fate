@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紫微斗數命盤排盤系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .form-group {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .chart {
+            width: 600px;
+            height: 600px;
+            border: 3px solid #2d3748;
+            background: white;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .palace {
+            position: absolute;
+            border: 1px solid #2d3748;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            font-size: 11px;
+            font-family: 'Microsoft JhengHei', 'SimSun', serif;
+            overflow: hidden;
+        }
+
+        /* 角落宮位 */
+        .corner {
+            width: 150px;
+            height: 150px;
+        }
+
+        /* 邊緣宮位 */
+        .edge {
+            width: 150px;
+            height: 150px;
+        }
+
+        /* 巳宮 - 左上角 - 淺黃色 */
+        .si { 
+            top: 0; 
+            left: 0; 
+            background: #fff2cc;
+        }
+        
+        /* 午宮 - 上邊中 - 淺藍色 */
+        .wu { 
+            top: 0; 
+            left: 150px; 
+            width: 150px; 
+            background: #dae8fc;
+        }
+        
+        /* 未宮 - 上邊右 - 淺綠色 */
+        .wei { 
+            top: 0; 
+            left: 300px; 
+            width: 150px; 
+            background: #d5e8d4;
+        }
+        
+        /* 申宮 - 右上角 - 淺紫色 */
+        .shen { 
+            top: 0; 
+            left: 450px; 
+            background: #e1d5e7;
+        }
+        
+        /* 辰宮 - 左邊上 - 淺橙色 */
+        .chen { 
+            top: 150px; 
+            left: 0; 
+            height: 150px; 
+            background: #ffe6cc;
+        }
+        
+        /* 酉宮 - 右邊上 - 淺藍色 */
+        .you { 
+            top: 150px; 
+            left: 450px; 
+            height: 150px; 
+            background: #dae8fc;
+        }
+        
+        /* 卯宮 - 左邊下 - 淺綠色 */
+        .mao { 
+            top: 300px; 
+            left: 0; 
+            height: 150px; 
+            background: #d5e8d4;
+        }
+        
+        /* 戌宮 - 右邊下 - 淺紅色 */
+        .xu { 
+            top: 300px; 
+            left: 450px; 
+            height: 150px; 
+            background: #f8cecc;
+        }
+        
+        /* 寅宮 - 左下角 - 淺黃色 */
+        .yin { 
+            top: 450px; 
+            left: 0; 
+            background: #fff2cc;
+        }
+        
+        /* 丑宮 - 下邊左 - 淺紫色 */
+        .chou { 
+            top: 450px; 
+            left: 150px; 
+            width: 150px; 
+            background: #e1d5e7;
+        }
+        
+        /* 子宮 - 下邊中 - 淺橙色 */
+        .zi { 
+            top: 450px; 
+            left: 300px; 
+            width: 150px; 
+            background: #ffe6cc;
+        }
+        
+        /* 亥宮 - 右下角 - 淺紅色 */
+        .hai { 
+            top: 450px; 
+            left: 450px; 
+            background: #f8cecc;
+        }
+
+        .palace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .palace-name {
+            color: #1a365d;
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .dizhi {
+            color: #e53e3e;
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .stars-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+
+        .main-stars {
+            color: #2d3748;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .auxiliary-stars {
+            color: #e53e3e;
+            font-size: 9px;
+        }
+
+        .four-elements {
+            color: #38a169;
+            font-size: 9px;
+        }
+
+        .age-range {
+            color: #2d3748;
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: auto;
+            padding-top: 3px;
+            border-top: 1px solid rgba(45, 55, 72, 0.3);
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 3px;
+        }
+
+        .ming-palace {
+            border: 2px solid #d4af37 !important;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4) !important;
+        }
+
+        .shen-palace {
+            border: 2px solid #ff6b6b !important;
+        }
+
+        .center-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(248, 250, 252, 0.95);
+            border: 2px solid #4a5568;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .center-info .title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .center-info .content {
+            color: #4a5568;
+            line-height: 1.4;
+        }
+
+        .info-panel {
+            margin-top: 30px;
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .info-title {
+            color: #4a5568;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            margin: 20px 0;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .lunar-info {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>紫微斗數命盤排盤系統</h1>
+        
+        <div class="input-section">
+            <div class="form-group">
+                <label for="lunar-month">農曆月份：</label>
+                <select id="lunar-month">
+                    <option value="1">正月</option>
+                    <option value="2">二月</option>
+                    <option value="3">三月</option>
+                    <option value="4">四月</option>
+                    <option value="5">五月</option>
+                    <option value="6" selected>六月</option>
+                    <option value="7">七月</option>
+                    <option value="8">八月</option>
+                    <option value="9">九月</option>
+                    <option value="10">十月</option>
+                    <option value="11">冬月</option>
+                    <option value="12">臘月</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="lunar-day">農曆日期：</label>
+                <input type="number" id="lunar-day" value="15" min="1" max="30">
+            </div>
+            
+            <div class="form-group">
+                <label for="hour">時辰：</label>
+                <select id="hour">
+                    <option value="0">子時 (23:00-1:00)</option>
+                    <option value="1">丑時 (1:00-3:00)</option>
+                    <option value="2">寅時 (3:00-5:00)</option>
+                    <option value="3">卯時 (5:00-7:00)</option>
+                    <option value="4">辰時 (7:00-9:00)</option>
+                    <option value="5">巳時 (9:00-11:00)</option>
+                    <option value="6" selected>午時 (11:00-13:00)</option>
+                    <option value="7">未時 (13:00-15:00)</option>
+                    <option value="8">申時 (15:00-17:00)</option>
+                    <option value="9">酉時 (17:00-19:00)</option>
+                    <option value="10">戌時 (19:00-21:00)</option>
+                    <option value="11">亥時 (21:00-23:00)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <button class="btn" onclick="generateChart()">排盤</button>
+            </div>
+        </div>
+                <label for="month">月份：</label>
+                <select id="month">
+                    <option value="1">一月</option>
+                    <option value="2">二月</option>
+                    <option value="3">三月</option>
+                    <option value="4">四月</option>
+                    <option value="5">五月</option>
+                    <option value="6" selected>六月</option>
+                    <option value="7">七月</option>
+                    <option value="8">八月</option>
+                    <option value="9">九月</option>
+                    <option value="10">十月</option>
+                    <option value="11">十一月</option>
+                    <option value="12">十二月</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="day">日期：</label>
+                <input type="number" id="day" value="15" min="1" max="31">
+            </div>
+            
+            <div class="form-group">
+                <label for="hour">時辰：</label>
+                <select id="hour">
+                    <option value="0">子時 (23:00-1:00)</option>
+                    <option value="1">丑時 (1:00-3:00)</option>
+                    <option value="2">寅時 (3:00-5:00)</option>
+                    <option value="3">卯時 (5:00-7:00)</option>
+                    <option value="4">辰時 (7:00-9:00)</option>
+                    <option value="5">巳時 (9:00-11:00)</option>
+                    <option value="6" selected>午時 (11:00-13:00)</option>
+                    <option value="7">未時 (13:00-15:00)</option>
+                    <option value="8">申時 (15:00-17:00)</option>
+                    <option value="9">酉時 (17:00-19:00)</option>
+                    <option value="10">戌時 (19:00-21:00)</option>
+                    <option value="11">亥時 (21:00-23:00)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">性別：</label>
+                <select id="gender">
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <button class="btn" onclick="generateChart()">排盤</button>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart" id="chart"></div>
+        </div>
+
+        <div class="lunar-info" id="lunar-info"></div>
+
+        <div class="info-panel">
+            <div class="info-title">命盤詳細資訊</div>
+            <div class="info-content" id="info-content">
+                <div class="info-item">
+                    <strong>命宮主星：</strong><span id="ming-star">請先排盤</span>
+                </div>
+                <div class="info-item">
+                    <strong>身宮位置：</strong><span id="shen-palace">請先排盤</span>
+                </div>
+                <div class="info-item">
+                    <strong>五行局：</strong><span id="wuxing">請先排盤</span>
+                </div>
+                <div class="info-item">
+                    <strong>命宮地支：</strong><span id="ming-dizhi">請先排盤</span>
+                </div>
+                <div class="info-item">
+                    <strong>農曆生日：</strong><span id="lunar-date">請先排盤</span>
+                </div>
+                <div class="info-item">
+                    <strong>斗君位置：</strong><span id="doujun">請先排盤</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 基礎數據
+        const palaceNames = ['命宮', '兄弟', '夫妻', '子女', '財帛', '疾厄', '遷移', '交友', '官祿', '田宅', '福德', '父母'];
+        const dizhi = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        const tiangan = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        const shichen = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        
+        // 地支對應的CSS類名
+        const dizhiClasses = ['zi', 'chou', 'yin', 'mao', 'chen', 'si', 'wu', 'wei', 'shen', 'you', 'xu', 'hai'];
+        
+        // 十二宮與地支的對應關係 (命宮在地支的位置)
+        const palaceToPosition = {
+            0: 'ming',  // 命宮
+            1: 'xiong', // 兄弟
+            2: 'fuqi',  // 夫妻  
+            3: 'zinv',  // 子女
+            4: 'caibo', // 財帛
+            5: 'jie',   // 疾厄
+            6: 'qianyi',// 遷移
+            7: 'jiaoyou',// 交友
+            8: 'guanlu',// 官祿
+            9: 'tianzhai',// 田宅
+            10: 'fude', // 福德
+            11: 'fumu'  // 父母
+        };
+
+        // 五行局表
+        const wuxingju = {
+            '甲子': '水二局', '乙丑': '金四局', '丙寅': '火六局', '丁卯': '火六局', '戊辰': '木三局', '己巳': '木三局',
+            '庚午': '土五局', '辛未': '土五局', '壬申': '金四局', '癸酉': '金四局', '甲戌': '火六局', '乙亥': '火六局',
+            '丙子': '水二局', '丁丑': '水二局', '戊寅': '土五局', '己卯': '土五局', '庚辰': '金四局', '辛巳': '金四局',
+            '壬午': '木三局', '癸未': '木三局', '甲申': '水二局', '乙酉': '水二局', '丙戌': '土五局', '丁亥': '土五局',
+            '戊子': '火六局', '己丑': '火六局', '庚寅': '木三局', '辛卯': '木三局', '壬辰': '水二局', '癸巳': '水二局',
+            '甲午': '金四局', '乙未': '金四局', '丙申': '火六局', '丁酉': '火六局', '戊戌': '木三局', '己亥': '木三局',
+            '庚子': '土五局', '辛丑': '土五局', '壬寅': '金四局', '癸卯': '金四局', '甲辰': '火六局', '乙巳': '火六局',
+            '丙午': '水二局', '丁未': '水二局', '戊申': '土五局', '己酉': '土五局', '庚戌': '金四局', '辛亥': '金四局',
+            '壬子': '木三局', '癸丑': '木三局', '甲寅': '水二局', '乙卯': '水二局', '丙辰': '土五局', '丁巳': '土五局',
+            '戊午': '火六局', '己未': '火六局', '庚申': '木三局', '辛酉': '木三局', '壬戌': '水二局', '癸亥': '水二局'
+        };
+
+        // 輔星配置
+        const auxiliaryStars = {
+            '文昌': [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+            '文曲': [3, 2, 1, 0, 11, 10, 9, 8, 7, 6, 5, 4],
+            '左輔': [4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3],
+            '右弼': [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 11],
+            '天魁': [1, 0, 11, 10, 1, 0, 11, 10, 1, 0, 11, 10],
+            '天鉞': [7, 8, 9, 4, 7, 8, 9, 4, 7, 8, 9, 4]
+        };
+
+        // 四化星配置
+        const sihua = {
+            '甲': {化祿: '廉貞', 化權: '破軍', 化科: '武曲', 化忌: '太陽'},
+            '乙': {化祿: '天機', 化權: '天梁', 化科: '紫微', 化忌: '太陰'},
+            '丙': {化祿: '天同', 化權: '天機', 化科: '文昌', 化忌: '廉貞'},
+            '丁': {化祿: '太陰', 化權: '天同', 化科: '天機', 化忌: '巨門'},
+            '戊': {化祿: '貪狼', 化權: '太陰', 化科: '右弼', 化忌: '天機'},
+            '己': {化祿: '武曲', 化權: '貪狼', 化科: '天梁', 化忌: '文曲'},
+            '庚': {化祿: '太陽', 化權: '武曲', 化科: '太陰', 化忌: '天同'},
+            '辛': {化祿: '巨門', 化權: '太陽', 化科: '文曲', 化忌: '文昌'},
+            '壬': {化祿: '天梁', 化權: '紫微', 化科: '左輔', 化忌: '武曲'},
+            '癸': {化祿: '破軍', 化權: '巨門', 化科: '太陰', 化忌: '貪狼'}
+        };
+
+        // 大限年齡範圍
+        const ageRanges = ['5-14', '15-24', '25-34', '35-44', '45-54', '55-64', '65-74', '75-84', '85-94', '95-104', '105-114', '115-124'];
+
+        // 農曆轉換簡化版
+        function solarToLunar(year, month, day) {
+            const lunarMonth = month;
+            const lunarDay = day > 15 ? day - 15 : day + 15;
+            return {month: lunarMonth, day: lunarDay};
+        }
+
+        // 計算命宮位置 - 修正版
+        function calculateMingPalace(month, hour) {
+            // 1. 寅宮起正月，順數到生月
+            let monthPos = (2 + month - 1) % 12; // 寅=2，正月=1
+            
+            // 2. 從該月位置，以卯時起子時，逆數到生時
+            // 卯時=3，子時=0，所以從卯位開始逆數
+            let timeOffset = hour; // 直接用時辰序號
+            let mingPos = (monthPos + 12 - timeOffset) % 12;
+            
+            return mingPos;
+        }
+
+        // 計算身宮位置 - 修正版  
+        function calculateShenPalace(month, hour) {
+            // 1. 子宮起正月，順數到生月
+            let monthPos = (0 + month - 1) % 12; // 子=0，正月=1
+            
+            // 2. 從該月位置，以子時起子時，順數到生時
+            let shenPos = (monthPos + hour) % 12;
+            
+            return shenPos;
+        }
+
+        // 計算年干支
+        function getGanZhi(year) {
+            const ganIndex = (year - 4) % 10;
+            const zhiIndex = (year - 4) % 12;
+            return tiangan[ganIndex] + dizhi[zhiIndex];
+        }
+
+        // 正確的紫微星安星法
+        function placeMainStars(mingPalaceZhi, wuxingType, lunarDay) {
+            const stars = {};
+            
+            // 獲取五行局數
+            const wuxingNum = parseInt(wuxingType.charAt(1));
+            
+            // 紫微星安星演算法
+            // 1. 計算商數：找出幾倍的五行局數可以大於等於生日數
+            let quotient = Math.floor(lunarDay / wuxingNum);
+            if (lunarDay % wuxingNum !== 0) {
+                quotient += 1;
+            }
+            
+            // 2. 計算差數：倍數與生日數之差
+            let difference = quotient * wuxingNum - lunarDay;
+            
+            // 3. 根據差數奇偶性計算紫微位置
+            let ziweiOffset;
+            if (difference % 2 === 1) { // 差數為奇數
+                ziweiOffset = quotient - difference;
+            } else { // 差數為偶數
+                ziweiOffset = quotient + difference;
+            }
+            
+            // 4. 從寅宮(2)開始順時針數到計算位置
+            const ziweiPos = (2 + ziweiOffset - 1) % 12;
+            
+            // 5. 安排紫微星系（逆時針）
+            stars['紫微'] = ziweiPos;
+            stars['天機'] = (ziweiPos + 11) % 12; // 逆時針一宮
+            stars['太陽'] = (ziweiPos + 9) % 12;  // 跳隔一宮
+            stars['武曲'] = (ziweiPos + 8) % 12;  // 逆時針一宮
+            stars['天同'] = (ziweiPos + 7) % 12;  // 逆時針一宮
+            stars['廉貞'] = (ziweiPos + 4) % 12;  // 跳隔兩宮
+            
+            // 6. 天府星系（從寅宮逆時針安天府）
+            let tianfuOffset;
+            if (difference % 2 === 1) { // 差數為奇數
+                tianfuOffset = quotient + difference;
+            } else { // 差數為偶數
+                tianfuOffset = quotient - difference;
+            }
+            
+            const tianfuPos = (2 + 12 - tianfuOffset + 1) % 12; // 從寅宮逆時針
+            stars['天府'] = tianfuPos;
+            stars['太陰'] = (tianfuPos + 1) % 12;  // 順時針一宮
+            stars['貪狼'] = (tianfuPos + 2) % 12;  // 順時針一宮
+            stars['巨門'] = (tianfuPos + 3) % 12;  // 順時針一宮
+            stars['天相'] = (tianfuPos + 4) % 12;  // 順時針一宮
+            stars['天梁'] = (tianfuPos + 5) % 12;  // 順時針一宮
+            stars['七殺'] = (tianfuPos + 6) % 12;  // 順時針一宮
+            stars['破軍'] = (tianfuPos + 10) % 12; // 跳隔三宮
+            
+            return stars;
+        }
+
+        // 安輔星 - 簡化版
+        function placeAuxiliaryStars(year, lunarMonth, lunarDay, hour) {
+            const stars = {};
+            
+            // 基本輔星配置
+            stars['文昌'] = (hour + 9) % 12;
+            stars['文曲'] = (3 - hour + 12) % 12;
+            stars['左輔'] = (lunarMonth + 3) % 12;
+            stars['右弼'] = (9 - lunarMonth + 12) % 12;
+            
+            return stars;
+        }
+
+        // 安四化星
+        function placeSihua(year, mainStars) {
+            const ganIndex = (year - 4) % 10;
+            const yearGan = tiangan[ganIndex];
+            const sihuaStars = sihua[yearGan];
+            
+            const sihuaPositions = {};
+            for (const [type, starName] of Object.entries(sihuaStars)) {
+                if (mainStars[starName] !== undefined) {
+                    sihuaPositions[type] = mainStars[starName];
+                }
+            }
+            
+            return sihuaPositions;
+        }
+
+        // 獲取宮位名稱（根據命宮在地支的位置計算）- 修正版
+        function getPalaceName(dizhiIndex, mingPalaceZhi) {
+            // 十二宮逆時針排列：命宮、兄弟、夫妻、子女、財帛、疾厄、遷移、交友、官祿、田宅、福德、父母
+            const offset = (dizhiIndex - mingPalaceZhi + 12) % 12;
+            return palaceNames[offset];
+        }
+
+        function generateChart() {
+            const chart = document.getElementById('chart');
+            chart.innerHTML = '<div class="loading">正在排盤中...</div>';
+            
+            setTimeout(() => {
+                const lunarMonth = parseInt(document.getElementById('lunar-month').value);
+                const lunarDay = parseInt(document.getElementById('lunar-day').value);
+                const hour = parseInt(document.getElementById('hour').value);
+                
+                // 使用固定年份進行演示（可以改為用戶輸入）
+                const year = 2000;
+                const ganZhi = getGanZhi(year);
+                const wuxingType = '水二局'; // 簡化為固定五行局，或可根據需要計算
+                
+                // 計算宮位（返回地支序號0-11）
+                const mingPalaceZhi = calculateMingPalace(lunarMonth, hour);
+                const shenPalaceZhi = calculateShenPalace(lunarMonth, hour);
+                
+                // 安星（使用農曆日期）
+                const mainStars = placeMainStars(mingPalaceZhi, wuxingType, lunarDay);
+                const auxStars = placeAuxiliaryStars(year, lunarMonth, lunarDay, hour);
+                const sihuaStars = {}; // 簡化四化星
+                
+                chart.innerHTML = '';
+                
+                // 創建十二個地支宮位 - 修正版
+                for (let i = 0; i < 12; i++) {
+                    const palace = document.createElement('div');
+                    palace.className = `palace corner ${dizhiClasses[i]}`;
+                    
+                    // 根據地支位置和命宮地支計算宮位名稱
+                    const palaceName = getPalaceName(i, mingPalaceZhi);
+                    const palaceIndex = palaceNames.indexOf(palaceName);
+                    
+                    // 標記命宮和身宮
+                    if (i === mingPalaceZhi) palace.classList.add('ming-palace'); // 命宮在此地支
+                    if (i === shenPalaceZhi) palace.classList.add('shen-palace'); // 身宮在此地支
+                    
+                    // 宮位標題
+                    const header = document.createElement('div');
+                    header.className = 'palace-header';
+                    
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'palace-name';
+                    nameDiv.textContent = palaceName;
+                    
+                    const dizhiDiv = document.createElement('div');
+                    dizhiDiv.className = 'dizhi';
+                    dizhiDiv.textContent = dizhi[i];
+                    
+                    header.appendChild(nameDiv);
+                    header.appendChild(dizhiDiv);
+                    palace.appendChild(header);
+                    
+                    // 星曜容器
+                    const starsContainer = document.createElement('div');
+                    starsContainer.className = 'stars-container';
+                    
+                    // 主星
+                    const mainStarsDiv = document.createElement('div');
+                    mainStarsDiv.className = 'main-stars';
+                    const mainStarsInPalace = [];
+                    for (const [starName, pos] of Object.entries(mainStars)) {
+                        if (pos === i) {
+                            mainStarsInPalace.push(starName);
+                        }
+                    }
+                    mainStarsDiv.innerHTML = mainStarsInPalace.join(' ');
+                    
+                    // 輔星
+                    const auxStarsDiv = document.createElement('div');
+                    auxStarsDiv.className = 'auxiliary-stars';
+                    const auxStarsInPalace = [];
+                    for (const [starName, pos] of Object.entries(auxStars)) {
+                        if (pos === i) {
+                            auxStarsInPalace.push(starName);
+                        }
+                    }
+                    auxStarsDiv.innerHTML = auxStarsInPalace.join(' ');
+                    
+                    // 四化星
+                    const sihuaDiv = document.createElement('div');
+                    sihuaDiv.className = 'four-elements';
+                    const sihuaInPalace = [];
+                    for (const [type, pos] of Object.entries(sihuaStars)) {
+                        if (pos === i) {
+                            sihuaInPalace.push(type);
+                        }
+                    }
+                    sihuaDiv.innerHTML = sihuaInPalace.join(' ');
+                    
+                    // 大限年齡
+                    const ageDiv = document.createElement('div');
+                    ageDiv.className = 'age-range';
+                    const ageIndex = (palaceIndex + Math.floor((gender === 'male' ? 5 : 5))) % 12;
+                    ageDiv.textContent = ageRanges[ageIndex];
+                    
+                    starsContainer.appendChild(mainStarsDiv);
+                    starsContainer.appendChild(auxStarsDiv);
+                    starsContainer.appendChild(sihuaDiv);
+                    starsContainer.appendChild(ageDiv);
+                    palace.appendChild(starsContainer);
+                    
+                    chart.appendChild(palace);
+                }
+                
+                // 中央資訊區 - 簡化版
+                const centerInfo = document.createElement('div');
+                centerInfo.className = 'center-info';
+                centerInfo.innerHTML = `
+                    <div class="title">命盤資訊</div>
+                    <div class="content">
+                        五行局：${wuxingType}<br>
+                        命宮：${dizhi[mingPalaceZhi]}<br>
+                        身宮：${dizhi[shenPalaceZhi]}
+                    </div>
+                `;
+                chart.appendChild(centerInfo);
+                
+                // 更新資訊面板
+                updateDetailedInfo(mingPalaceZhi, shenPalaceZhi, wuxingType, lunarMonth, lunarDay, hour, mainStars);
+                
+                // 顯示農曆資訊
+                const monthNames = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '冬月', '臘月'];
+                document.getElementById('lunar-info').innerHTML = 
+                    `農曆：${monthNames[lunarMonth]}${lunarDay}日 ${shichen[hour]}時 | 五行局：${wuxingType}`;
+                
+            }, 1000);
+        }
+        
+        function updateDetailedInfo(mingPosZhi, shenPosZhi, wuxingType, lunarMonth, lunarDay, hour, mainStars) {
+            // 找出命宮主星
+            const mingStars = [];
+            for (const [starName, pos] of Object.entries(mainStars)) {
+                if (pos === mingPosZhi) {
+                    mingStars.push(starName);
+                }
+            }
+            
+            document.getElementById('ming-star').textContent = mingStars.join('、') || '無主星';
+            document.getElementById('shen-palace').textContent = dizhi[shenPosZhi];
+            document.getElementById('wuxing').textContent = wuxingType;
+            document.getElementById('ming-dizhi').textContent = dizhi[mingPosZhi];
+            document.getElementById('lunar-date').textContent = `農曆${lunarMonth}月${lunarDay}日`;
+            document.getElementById('doujun').textContent = dizhi[mingPosZhi]; // 簡化斗君計算
+        }
+        
+        window.onload = function() {
+            generateChart();
+        };
+    </script>
+</body>
+</html>
